@@ -52,6 +52,9 @@ Nexus is hardened against modern attack vectors:
 - **NoSQL Guard**: Protects against injection attacks via `mongo-sanitize`. 🛡️
 - **Nexus 2FA Guard**: (Optional) Secure OTP verification required for login when enabled. ✅
 
+## 🌟 Current Status
+All core milestones (M1-M7) including multi-role authentication, real-time messaging, and capital flow integrations (Investment Modal & Wallet) are now fully operational. The platform is staged and ready for demonstration.
+
 ---
 
 **Built with Precision for the Next Generation of Global Startups.** 🛰️🚀🛸🎯
