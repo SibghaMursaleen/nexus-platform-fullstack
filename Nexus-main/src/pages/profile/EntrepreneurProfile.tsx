@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
 import { ScheduleMeetingModal } from '../../components/chat/ScheduleMeetingModal';
+import { InvestModal } from '../../components/investor/InvestModal';
 import api from '../../lib/axios';
 
 export const EntrepreneurProfile: React.FC = () => {
@@ -15,6 +16,7 @@ export const EntrepreneurProfile: React.FC = () => {
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
   const [entrepreneur, setEntrepreneur] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -168,6 +170,14 @@ export const EntrepreneurProfile: React.FC = () => {
                       Schedule Meeting
                     </Button>
                     <Button
+                      variant="primary"
+                      className="bg-accent-600 hover:bg-accent-700 text-white font-bold shadow-lg shadow-accent-500/20"
+                      leftIcon={<DollarSign size={18} />}
+                      onClick={() => setIsInvestModalOpen(true)}
+                    >
+                      Invest Now
+                    </Button>
+                    <Button
                       leftIcon={<Send size={18} />}
                       className="bg-primary-600 hover:bg-primary-700 text-white font-bold shadow-lg shadow-primary-500/20"
                       disabled={hasRequestedCollaboration}
@@ -185,6 +195,14 @@ export const EntrepreneurProfile: React.FC = () => {
               onClose={() => setIsModalOpen(false)}
               receiverId={entrepreneur._id}
               receiverName={entrepreneur.name}
+            />
+
+            <InvestModal
+              isOpen={isInvestModalOpen}
+              onClose={() => setIsInvestModalOpen(false)}
+              entrepreneurId={entrepreneur._id}
+              entrepreneurName={entrepreneur.name}
+              startupName={entrepreneur.startupName}
             />
 
             <ScheduleMeetingModal 

@@ -10,6 +10,10 @@ router.get('/profile', protect, getProfile);
 // Get any user profile by ID (Public-ish)
 router.get('/profile/:id', getProfile);
 
+// Get list of users (Public-ish)
+const { getUsers } = require('../controllers/userController');
+router.get('/', getUsers);
+
 // Update current user profile with optional logo/banner upload (Protected & Validated)
 router.put('/profile', protect, uploadBranding, profileValidationRules, validate, updateProfile);
 

@@ -65,6 +65,28 @@ exports.getProfile = async (req, res) => {
     }
 };
 
+// @desc    Get all users (with optional role filter)
+// @route   GET /api/users
+// @access  Public / Private
+exports.getUsers = async (req, res) => {
+    try {
+        const { role } = req.query;
+        const filter = {};
+        if (role) filter.role = role;
+
+        const users = await User.find(filter).select('-password');
+        
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            users
+        });
+    } catch (err) {
+        console.error('Get Users Error:', err);
+        res.status(500).json({ error: 'Server list error', details: err.message });
+    }
+};
+
 // @desc    Update current user profile
 // @route   PUT /api/users/profile
 // @access  Private

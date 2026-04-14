@@ -7,10 +7,35 @@ import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { useAuth } from '../../context/AuthContext';
 
+import toast from 'react-hot-toast';
+import api from '../../lib/axios';
+
 export const SettingsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const [isUpdating, setIsUpdating] = useState(false);
   
   if (!user) return null;
+
+  const handleToggle2FA = async () => {
+    try {
+        setIsUpdating(true);
+        const response = await api.put('/auth/toggle-2fa');
+        if (response.data.success) {
+            toast.success(response.data.message);
+            // Update local user state
+            if (setUser) {
+                setUser({
+                    ...user,
+                    isTwoFactorEnabled: response.data.isTwoFactorEnabled
+                });
+            }
+        }
+    } catch (err) {
+        toast.error('Failed to update security settings');
+    } finally {
+        setIsUpdating(false);
+    }
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -137,9 +162,17 @@ export const SettingsPage: React.FC = () => {
                     <p className="text-sm text-gray-600">
                       Add an extra layer of security to your account
                     </p>
-                    <Badge variant="error" className="mt-1">Not Enabled</Badge>
+                    <Badge variant={user.isTwoFactorEnabled ? 'success' : 'error'} className="mt-1">
+                        {user.isTwoFactorEnabled ? 'Securely Enabled' : 'Not Enabled'}
+                    </Badge>
                   </div>
-                  <Button variant="outline">Enable</Button>
+                  <Button 
+                    variant={user.isTwoFactorEnabled ? 'error' : 'primary'}
+                    onClick={handleToggle2FA}
+                    isLoading={isUpdating}
+                  >
+                    {user.isTwoFactorEnabled ? 'Deactivate Guard' : 'Enable Nexus Guard'}
+                  </Button>
                 </div>
               </div>
               

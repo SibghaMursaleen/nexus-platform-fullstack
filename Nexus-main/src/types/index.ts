@@ -2,18 +2,23 @@ export type UserRole = 'entrepreneur' | 'investor';
 
 export interface User {
   id: string;
+  _id?: string; // Support MongoDB field
   name: string;
   email: string;
   role: UserRole;
   avatarUrl: string;
   bio: string;
   isOnline?: boolean;
+  walletBalance: number;
+  isTwoFactorEnabled: boolean;
+  bannerUrl?: string;
   createdAt: string;
 }
 
 export interface Entrepreneur extends User {
   role: 'entrepreneur';
   startupName: string;
+  startupLogoUrl?: string;
   pitchSummary: string;
   fundingNeeded: string;
   industry: string;

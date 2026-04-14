@@ -1,3 +1,6 @@
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -10,6 +13,8 @@ const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const User = require('./models/User');
 
 const app = express();
 const server = http.createServer(app);
@@ -51,22 +56,93 @@ const MONGO_URI = process.env.MONGO_URI;
 mongoose.set('debug', true);
 
 // Connect and Start Server
-if (MONGO_URI) {
-    mongoose.connect(MONGO_URI)
-        .then(() => {
-            console.log('✅ Connected to MongoDB Atlas');
-            server.listen(PORT, () => {
-                console.log(`🚀 Server with Socket.io is running on http://localhost:${PORT}`);
-            });
-        })
-        .catch(err => {
-            console.error('❌ MongoDB Connection Error:', err);
+const startServer = async () => {
+    let connectionUri = process.env.MONGO_URI;
+
+    if (process.env.USE_MEMORY_DB === 'true') {
+        try {
+            console.log('🔄 Starting In-Memory MongoDB...');
+            const mongoServer = await MongoMemoryServer.create();
+            connectionUri = mongoServer.getUri();
+            console.log('✅ In-Memory MongoDB started at:', connectionUri);
+        } catch (err) {
+            console.error('❌ Failed to start In-Memory MongoDB:', err);
             process.exit(1);
-        });
-} else {
-    console.error('MONGO_URI is not defined in .env');
-    process.exit(1);
-}
+        }
+    }
+
+    if (connectionUri) {
+        mongoose.connect(connectionUri)
+            .then(async () => {
+                console.log(process.env.USE_MEMORY_DB === 'true' ? '✅ Connected to In-Memory MongoDB' : '✅ Connected to MongoDB Atlas');
+                
+                // Seed Demo Users if in Memory Mode
+                if (process.env.USE_MEMORY_DB === 'true') {
+                    const demoUsers = [
+                        { 
+                            name: "Demo Entrepreneur", 
+                            email: "entrepreneur@nexus.com", 
+                            password: "password123", 
+                            role: "entrepreneur", 
+                            isVerified: true,
+                            bio: "Serial entrepreneur with 10+ years of experience in SaaS and fintech.",
+                            startupName: "TechWave AI",
+                            industry: "FinTech",
+                            location: "San Francisco, CA",
+                            pitchSummary: "AI-powered financial analytics platform helping SMBs make data-driven decisions.",
+                            fundingNeeded: "$1.5M",
+                            teamSize: 12,
+                            foundedYear: "2021",
+                            isOnline: true,
+                            avatarUrl: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"
+                        },
+                        { 
+                            name: "Demo Investor", 
+                            email: "investor@nexus.com", 
+                            password: "password123", 
+                            role: "investor", 
+                            isVerified: true,
+                            bio: "Early-stage investor with focus on B2B SaaS and fintech. Previously founded and exited two startups.",
+                            startupName: "Innovate VC",
+                            location: "New York, NY",
+                            investmentInterests: ["FinTech", "SaaS", "AI/ML"],
+                            investmentStage: ["Seed", "Series A"],
+                            portfolioCompanies: ["PayStream", "DataSense", "CloudSecure"],
+                            totalInvestments: 12,
+                            minimumInvestment: "$250K",
+                            maximumInvestment: "$1.5M",
+                            isOnline: true,
+                            avatarUrl: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg"
+                        }
+                    ];
+                    for (const u of demoUsers) {
+                        const exists = await User.findOne({ email: u.email });
+                        if (!exists) {
+                            await User.create(u);
+                        } else {
+                            // Update existing users in memory DB if schema changed
+                            Object.assign(exists, u);
+                            await exists.save();
+                        }
+                    }
+                    console.log('👥 Demo accounts seeded with full profile data');
+                }
+
+                server.listen(PORT, () => {
+                    console.log(`🚀 Server with Socket.io is running on http://localhost:${PORT}`);
+                });
+            })
+            .catch(err => {
+                console.error('❌ MongoDB Connection Error:', err);
+                process.exit(1);
+            });
+    } else {
+        console.error('MONGO_URI is not defined in .env');
+        process.exit(1);
+    }
+};
+
+startServer();
 
 // Routes
 const authRoutes = require('./routes/authRoutes');

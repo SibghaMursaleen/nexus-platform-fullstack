@@ -80,6 +80,45 @@ const userSchema = new mongoose.Schema({
         default: 0,
         min: [0, 'Balance cannot be negative']
     },
+    // Investor Specific Fields 💹
+    investmentInterests: {
+        type: [String],
+        default: []
+    },
+    investmentStage: {
+        type: [String],
+        default: []
+    },
+    portfolioCompanies: {
+        type: [String],
+        default: []
+    },
+    minimumInvestment: {
+        type: String,
+        default: '$0'
+    },
+    maximumInvestment: {
+        type: String,
+        default: '$0'
+    },
+    totalInvestments: {
+        type: Number,
+        default: 0
+    },
+    // Entrepreneur Specific Fields 🚀
+    fundingNeeded: {
+        type: String,
+        default: '$0'
+    },
+    // UI & Status Fields
+    isOnline: {
+        type: Boolean,
+        default: false
+    },
+    avatarUrl: {
+        type: String,
+        default: ''
+    },
     // 2-Factor Authentication 🔐
     isTwoFactorEnabled: {
         type: Boolean,
